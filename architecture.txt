@@ -1,0 +1,24 @@
+mon_stock/
+├── manage.py
+├── mon_stock/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── stock/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── forms.py
+│   ├── templates/
+│   │   └── stock/
+│   │       ├── base.html
+│   │       ├── home.html
+│   │       ├── mouvement_list.html
+│   │       ├── mouvement_form.html
+│   │       └── facture_template.html
+│   └── utils.py
+└── requirements.txt

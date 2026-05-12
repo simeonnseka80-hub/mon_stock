@@ -1,0 +1,66 @@
+{% extends 'stock/base.html' %}
+{% block title %}Historique des mouvements{% endblock %}
+{% block content %}
+<h2>Mouvements</h2>
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <select name="produit" class="form-select">
+            <option value="">Tous les produits</option>
+            {% for p in produits %}
+                <option value="{{ p.id }}" {% if selected_produit == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nom }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="type" class="form-select">
+            <option value="">Tous les types</option>
+            <option value="ENTREE" {% if selected_type == 'ENTREE' %}selected{% endif %}>Entrées</option>
+            <option value="SORTIE" {% if selected_type == 'SORTIE' %}selected{% endif %}>Sorties</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">Filtrer</button>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'mouvement_create' %}?type=ENTREE" class="btn btn-success">+ Entrée</a>
+        <a href="{% url 'mouvement_create' %}?type=SORTIE" class="btn btn-warning">+ Sortie</a>
+        <a href="{% url 'export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-info">Export Excel</a>
+    </div>
+</form>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Produit</th>
+            <th>Qté</th>
+            <th>Commentaire</th>
+            <th>Facture</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for m in mouvements %}
+        <tr>
+            <td>{{ m.date|date:"d/m/Y H:i" }}</td>
+            <td><span class="badge {% if m.type_mouvement == 'ENTREE' %}bg-success{% else %}bg-warning text-dark{% endif %}">{{ m.get_type_mouvement_display }}</span></td>
+            <td>{{ m.produit.nom }}</td>
+            <td>{{ m.quantite }}</td>
+            <td>{{ m.commentaire|default:"-" }}</td>
+            <td>
+                {% if m.type_mouvement == 'SORTIE' %}
+                    {% if m.facture %}
+                        <a href="{% url 'facture_pdf' m.pk %}" class="btn btn-sm btn-outline-secondary">PDF</a>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">Aucun mouvement trouvé.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

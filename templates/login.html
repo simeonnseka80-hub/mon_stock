@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mon Stock — Connexion</title>
+  <link rel="stylesheet" href="/assets/css/home.css">
+</head>
+<body>
+  <header class="container">
+    <nav class="nav">
+      <div class="brand">
+        <span>Mon Stock</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn">Accueil</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero-card" style="max-width:520px;margin:28px auto;">
+      <h1 style="font-size:1.4rem;margin-bottom:8px;">Connexion</h1>
+      <p style="margin:0 0 12px;color:var(--muted)">Connecte-toi pour gérer ton stock.</p>
+
+      <form method="post" action="/login" style="display:grid;gap:10px;">
+        <input name="username" class="input" placeholder="Nom d'utilisateur" required>
+        <input name="password" type="password" class="input" placeholder="Mot de passe" required>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+          <button type="submit" class="btn">Se connecter</button>
+          <a href="/register" class="btn secondary" style="display:inline-flex;align-items:center;padding:8px 12px;text-decoration:none;">S'inscrire</a>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

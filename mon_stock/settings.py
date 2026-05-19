@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url  # <-- Nouvelle importation
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,13 +22,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-g^w(nzzk$&h55ywyqq+j(oklbe%xrcoc+d66i=-qdll_iw2z)s')
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-g^w(nzzk$&h55ywyqq+j(oklbe%xrcoc+d66i=-qdll_iw2z)s'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
+# ALLOWED_HOSTS : en production, utilise automatiquement le domaine Render
+# En local, laisse localhost et 127.0.0.1
+ALLOWED_HOSTS = [
+    os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'localhost')
+]
+# Si tu as besoin de plusieurs domaines, tu peux garder l'ancienne méthode avec split,
+# mais l'approche ci-dessus est plus simple pour Render.
 
-ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'localhost')]
 
 # Application definition
 
@@ -76,12 +86,23 @@ WSGI_APPLICATION = 'mon_stock.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('MON_STOCK_DB_PATH', BASE_DIR / 'db.sqlite3'),
+# Utilise PostgreSQL si l'URL est fournie (ex. Render), sinon SQLite pour le développement local
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True  # Render nécessite SSL pour PostgreSQL
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

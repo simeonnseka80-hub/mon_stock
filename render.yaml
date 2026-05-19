@@ -3,7 +3,8 @@ services:
     name: mon_stock
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt && python manage.py migrate && python manage.py shell < create_superuser.py"
+    # Use build.sh which installs deps, runs migrations, collectstatic and creates superuser
+    buildCommand: "bash build.sh"
     startCommand: "gunicorn mon_stock.wsgi:application"
     envVars:
       - key: DEBUG

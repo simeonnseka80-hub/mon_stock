@@ -3,3 +3,5 @@ gunicorn
 openpyxl
 xhtml2pdf
 whitenoise
+dj-database-url
+psycopg2-binary

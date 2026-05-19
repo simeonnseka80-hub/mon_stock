@@ -3,6 +3,7 @@ services:
     name: mon_stock
     env: python
     plan: free
+    workingDirectory: "src"
     # Use build.sh which installs deps, runs migrations, collectstatic and creates superuser
     buildCommand: "bash build.sh"
     startCommand: "gunicorn mon_stock.wsgi:application"

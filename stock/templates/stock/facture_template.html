@@ -1,11 +1,54 @@
-{% extends 'stock/base.html' %}
-{% block title %}Nouveau mouvement{% endblock %}
-{% block content %}
-<h2>{% if type_mvt == 'ENTREE' %}Nouvelle entrée{% else %}Nouvelle sortie{% endif %}</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
-    <a href="{% url 'mouvement_list' %}" class="btn btn-secondary">Annuler</a>
-</form>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; margin: 2cm; color: #333; }
+        .entete { text-align: center; margin-bottom: 2em; }
+        .entete h1 { color: #7e22ce; }  /* violet */
+        .details { margin-bottom: 1em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+        th, td { border: 1px solid #d8b4fe; padding: 10px; text-align: left; }
+        th { background-color: #f3e8ff; color: #6b21a8; font-weight: bold; }
+        .total { font-weight: bold; text-align: right; margin-top: 1em; color: #7e22ce; }
+        .footer { margin-top: 2em; text-align: center; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+<div class="entete">
+    <h1>Facture {{ facture.numero }}</h1>
+    <p>Date : {{ facture.date_facture|date:"d/m/Y" }}</p>
+</div>
+<div class="details">
+    <p><strong>Client :</strong> {{ facture.client_nom }}</p>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Produit</th>
+            <th>Unité</th>
+            <th>Prix unitaire HT</th>
+            <th>Quantité</th>
+            <th>Total HT</th>
+            <th>TVA ({{ tva_pct }} %)</th>
+            <th>Total TTC</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ produit.nom }}</td>
+            <td>{{ produit.unite_mesure }}</td>
+            <td>{{ prix_ht|floatformat:2 }} €</td>
+            <td>{{ mouvement.quantite }}</td>
+            <td>{{ total_ht|floatformat:2 }} €</td>
+            <td>{{ montant_tva|floatformat:2 }} €</td>
+            <td>{{ total_ttc|floatformat:2 }} €</td>
+        </tr>
+    </tbody>
+</table>
+<p class="total">Total TTC : {{ total_ttc|floatformat:2 }} €</p>
+<div class="footer">
+    Khalil Gestion Pro - Facture générée électroniquement
+</div>
+</body>
+</html>

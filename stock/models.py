@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Produit(models.Model):
     nom = models.CharField(max_length=200, verbose_name="Désignation")
     prix_unitaire = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix unitaire HT")
@@ -22,6 +23,7 @@ class Produit(models.Model):
 
     def __str__(self):
         return self.nom
+
 
 class Mouvement(models.Model):
     ENTREE = 'ENTREE'
@@ -48,6 +50,7 @@ class Mouvement(models.Model):
 
     def __str__(self):
         return f"{self.type_mouvement} {self.produit.nom} x{self.quantite}"
+
 
 class Facture(models.Model):
     mouvement = models.OneToOneField(

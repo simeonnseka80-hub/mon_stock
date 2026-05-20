@@ -1,93 +1,99 @@
 {% extends 'stock/base.html' %}
-{% block title %}État du stock - Khalil Gestion Pro{% endblock %}
-
+{% block title %}Tableau de bord{% endblock %}
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-3xl font-extrabold text-primary-900 tracking-tight">État du stock</h1>
-    <p class="text-gray-500 text-sm mt-1">Liste des produits disponibles et état global de l'inventaire.</p>
+
+<!-- HEADER -->
+<div class="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-8">
+    <div>
+        <h2 class="text-3xl font-bold text-primary-800">Tableau de bord</h2>
+        <p class="text-gray-500 mt-1">Suivi intelligent de votre inventaire et mouvements de stock.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'mouvement_create' %}?type=ENTREE"
+           class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl shadow-md font-medium transition">
+            + Nouvelle entrée
+        </a>
+        <a href="{% url 'mouvement_create' %}?type=SORTIE"
+           class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-3 rounded-xl shadow-md font-medium transition">
+            + Nouvelle sortie
+        </a>
+        <a href="{% url 'export_excel' %}"
+           class="bg-primary-500 hover:bg-primary-600 text-white px-5 py-3 rounded-xl shadow-md font-medium transition">
+            Export Excel
+        </a>
+    </div>
 </div>
 
-<div class="bg-white rounded-2xl shadow-card border border-primary-100 overflow-hidden mb-8">
-    <div class="bg-gradient-to-r from-primary-400 to-primary-500 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<!-- STATISTIQUES -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-2xl shadow-md p-6 border border-primary-100">
+        <p class="text-gray-500 text-sm">Produits en stock</p>
+        <h3 class="text-3xl font-bold text-primary-700 mt-2">{{ nb_produits }}</h3>
+        <p class="text-green-600 text-sm mt-2">Dernière mise à jour : aujourd'hui</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 border border-primary-100">
+        <p class="text-gray-500 text-sm">Valeur du stock</p>
+        <h3 class="text-3xl font-bold text-primary-700 mt-2">{{ valeur_stock|floatformat:2 }} €</h3>
+        <p class="text-primary-500 text-sm mt-2">Total HT estimé</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 border border-primary-100">
+        <p class="text-gray-500 text-sm">Produits critiques</p>
+        <h3 class="text-3xl font-bold text-red-500 mt-2">{{ nb_critiques }}</h3>
+        <p class="text-red-500 text-sm mt-2">Niveau d’alerte atteint</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 border border-primary-100">
+        <p class="text-gray-500 text-sm">Mouvements aujourd’hui</p>
+        <h3 class="text-3xl font-bold text-primary-700 mt-2">{{ mouvements_jour }}</h3>
+        <p class="text-gray-500 text-sm mt-2">Entrées et sorties</p>
+    </div>
+</div>
+
+<!-- TABLEAU DES STOCKS -->
+<div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-primary-100">
+    <div class="bg-primary-400 px-6 py-4 flex justify-between items-center">
         <div>
-            <h2 class="text-white font-extrabold text-xl">État du stock</h2>
-            <p class="text-primary-100 text-xs mt-0.5">Liste des produits disponibles</p>
-        </div>
-        <div class="w-full sm:w-64">
-            <input type="text" placeholder="Rechercher..." class="w-full bg-white text-gray-800 py-2.5 px-4 rounded-xl focus:outline-none shadow-sm text-sm" />
+            <h3 class="text-white text-lg font-bold">État du stock</h3>
+            <p class="text-primary-100 text-sm">Liste des produits disponibles</p>
         </div>
     </div>
-
-    <div class="grid grid-cols-3 bg-primary-50/50 px-6 py-3 border-b border-primary-100 text-xs font-bold uppercase tracking-wider text-primary-700">
-        <div>Produit</div>
-        <div class="text-center">Catégorie</div>
-        <div class="text-right">Prix</div>
-    </div>
-
-    <div class="divide-y divide-gray-100">
-        {% for p in produits %}
-            <div class="grid grid-cols-3 px-6 py-4 items-center hover:bg-primary-50/20 transition {% if p.alerte %}bg-red-50/40{% endif %}">
-                <div>
-                    <p class="font-extrabold text-gray-900 text-base">{{ p.nom }}</p>
-                    <p class="text-gray-400 text-xs mt-0.5">Réf : {{ p.code_barre|default:"PRD-" }}{{ p.id|stringformat:"03d" }}</p>
-                </div>
-                <div class="text-center text-gray-600 font-semibold text-sm">
-                    {{ p.categorie|default:"Général" }}
-                </div>
-                <div class="text-right font-black text-gray-900 text-base">
-                    {{ p.prix_unitaire|floatformat:2 }} €
-                </div>
-            </div>
-        {% empty %}
-            <div class="px-6 py-8 text-center text-gray-400 text-sm">
-                Aucun produit trouvé dans le système.
-            </div>
-        {% endfor %}
-    </div>
-</div>
-
-<div class="mb-4 mt-12">
-    <h2 class="text-xl font-extrabold text-primary-900 tracking-tight">Suivi détaillé des volumes</h2>
-    <p class="text-gray-500 text-xs mt-0.5">Contrôle des seuils d'alerte et des quantités réelles en réserve.</p>
-</div>
-
-<div class="bg-white rounded-2xl shadow-card overflow-hidden border border-primary-100">
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-100">
+        <table class="min-w-full">
             <thead class="bg-primary-50">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Produit</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Unité de mesure</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">TVA</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Stock Actuel</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Seuil Alerte</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Produit</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Unité</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Prix</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Quantité</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Statut</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
+            <tbody class="divide-y divide-gray-100">
                 {% for p in produits %}
-                    <tr class="transition hover:bg-primary-50/30 {% if p.alerte %}bg-red-50/60 hover:bg-red-50{% endif %}">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-950">{{ p.nom }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{{ p.unite_mesure }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{{ p.tva }} %</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            {% if p.alerte %}
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 animate-pulse">
-                                    {{ p.stock_actuel }} (Alerte)
-                                </span>
-                            {% else %}
-                                <span class="text-gray-900 font-extrabold">{{ p.stock_actuel }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <span class="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 text-xs font-bold">{{ p.seuil_alerte }}</span>
-                        </td>
-                    </tr>
+                <tr class="{% if p.est_critique %}bg-red-50{% else %}hover:bg-primary-50{% endif %} transition">
+                    <td class="px-6 py-4">
+                        <div class="font-semibold">{{ p.nom }}</div>
+                        <div class="text-sm text-gray-500">Réf : {{ p.id }}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600">{{ p.get_unite_display }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ p.prix_unitaire }} €</td>
+                    <td class="px-6 py-4 font-semibold {% if p.est_critique %}text-red-600{% else %}text-primary-700{% endif %}">
+                        {{ p.stock_actuel }}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if p.est_critique %}
+                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">Stock faible</span>
+                        {% else %}
+                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Disponible</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <a href="{% url 'mouvement_create' %}?type=ENTREE&produit={{ p.id }}"
+                           class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-sm">Entrée</a>
+                    </td>
+                </tr>
                 {% empty %}
-                    <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-400 font-medium">
-                            Aucune donnée de stock disponible.
-                        </td>
-                    </tr>
+                <tr><td colspan="6" class="text-center py-6 text-gray-500">Aucun produit enregistré.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

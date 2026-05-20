@@ -42,15 +42,15 @@
         <tr>
             <td style="font-weight: bold; color: #1a202c;">{{ produit.nom }}</td>
             <td>{{ produit.unite_mesure }}</td>
-            <td>{{ prix_ht|floatformat:2 }} €</td>
+            <td>{{ prix_ht|floatformat:2 }} $</td>
             <td style="font-weight: bold;">{{ mouvement.quantite }}</td>
-            <td>{{ total_ht|floatformat:2 }} €</td>
-            <td>{{ montant_tva|floatformat:2 }} €</td>
-            <td style="font-weight: bold; color: #7e22ce;">{{ total_ttc|floatformat:2 }} €</td>
+            <td>{{ total_ht|floatformat:2 }} $</td>
+            <td>{{ montant_tva|floatformat:2 }} $</td>
+            <td style="font-weight: bold; color: #7e22ce;">{{ total_ttc|floatformat:2 }} $</td>
         </tr>
     </tbody>
 </table>
-<p class="total">Total TTC : {{ total_ttc|floatformat:2 }} €</p>
+<p class="total">Total TTC : {{ total_ttc|floatformat:2 }} $</p>
 <div class="footer">
     <strong>Khalil Gestion Pro</strong> - Document certifié et généré électroniquement.
 </div>

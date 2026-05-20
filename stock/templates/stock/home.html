@@ -33,7 +33,7 @@
     </div>
     <div class="bg-white rounded-2xl shadow-md p-6 border border-primary-100">
         <p class="text-gray-500 text-sm">Valeur du stock</p>
-        <h3 class="text-3xl font-bold text-primary-700 mt-2">{{ valeur_stock|floatformat:2 }} €</h3>
+        <h3 class="text-3xl font-bold text-primary-700 mt-2">{{ valeur_stock|floatformat:2 }} $</h3>
         <p class="text-primary-500 text-sm mt-2">Total HT estimé</p>
     </div>
     <div class="bg-white rounded-2xl shadow-md p-6 border border-primary-100">
@@ -76,7 +76,7 @@
                         <div class="text-sm text-gray-500">Réf : {{ p.id }}</div>
                     </td>
                     <td class="px-6 py-4 text-gray-600">{{ p.get_unite_display }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ p.prix_unitaire }} €</td>
+                    <td class="px-6 py-4 text-gray-600">{{ p.prix_unitaire }} $</td>
                     <td class="px-6 py-4 font-semibold {% if p.est_critique %}text-red-600{% else %}text-primary-700{% endif %}">
                         {{ p.stock_actuel }}
                     </td>

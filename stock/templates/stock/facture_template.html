@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; margin: 2cm; color: #333; }
-        .entete { text-align: center; margin-bottom: 2em; }
-        .entete h1 { color: #7e22ce; }  /* violet */
-        .details { margin-bottom: 1em; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-        th, td { border: 1px solid #d8b4fe; padding: 10px; text-align: left; }
-        th { background-color: #f3e8ff; color: #6b21a8; font-weight: bold; }
-        .total { font-weight: bold; text-align: right; margin-top: 1em; color: #7e22ce; }
-        .footer { margin-top: 2em; text-align: center; font-size: 0.9em; color: #666; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 1.5cm; color: #2d3748; line-height: 1.5; }
+        .entete { text-align: center; margin-bottom: 3em; border-bottom: 2px solid #f3e8ff; padding-bottom: 1.5em; }
+        .entete h1 { color: #7e22ce; font-size: 2.2em; margin: 0; font-weight: 800; }
+        .entete p { color: #a0aec0; margin-top: 0.5em; font-size: 1em; }
+        .details { margin-bottom: 2em; font-size: 1.1em; }
+        .details strong { color: #4a5568; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1.5em; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        th, td { padding: 12px 15px; text-align: left; font-size: 0.95em; }
+        th { background-color: #7e22ce; color: #ffffff; font-weight: bold; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px; }
+        td { border-bottom: 1px solid #e9d5ff; color: #4a5568; }
+        tr:nth-child(even) { background-color: #faf5ff; }
+        .total { font-weight: bold; text-align: right; margin-top: 2em; color: #7e22ce; font-size: 1.4em; }
+        .footer { margin-top: 5em; text-align: center; font-size: 0.85em; color: #a0aec0; border-top: 1px solid #edf2f7; padding-top: 1.5em; }
     </style>
 </head>
 <body>
 <div class="entete">
     <h1>Facture {{ facture.numero }}</h1>
-    <p>Date : {{ facture.date_facture|date:"d/m/Y" }}</p>
+    <p>Date d'émission : {{ facture.date_facture|date:"d/m/Y" }}</p>
 </div>
 <div class="details">
     <p><strong>Client :</strong> {{ facture.client_nom }}</p>
@@ -36,19 +40,19 @@
     </thead>
     <tbody>
         <tr>
-            <td>{{ produit.nom }}</td>
+            <td style="font-weight: bold; color: #1a202c;">{{ produit.nom }}</td>
             <td>{{ produit.unite_mesure }}</td>
             <td>{{ prix_ht|floatformat:2 }} €</td>
-            <td>{{ mouvement.quantite }}</td>
+            <td style="font-weight: bold;">{{ mouvement.quantite }}</td>
             <td>{{ total_ht|floatformat:2 }} €</td>
             <td>{{ montant_tva|floatformat:2 }} €</td>
-            <td>{{ total_ttc|floatformat:2 }} €</td>
+            <td style="font-weight: bold; color: #7e22ce;">{{ total_ttc|floatformat:2 }} €</td>
         </tr>
     </tbody>
 </table>
 <p class="total">Total TTC : {{ total_ttc|floatformat:2 }} €</p>
 <div class="footer">
-    Khalil Gestion Pro - Facture générée électroniquement
+    <strong>Khalil Gestion Pro</strong> - Document certifié et généré électroniquement.
 </div>
 </body>
 </html>

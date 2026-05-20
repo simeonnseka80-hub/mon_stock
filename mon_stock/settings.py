@@ -33,7 +33,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 # ALLOWED_HOSTS : en production, utilise automatiquement le domaine Render
 # En local, laisse localhost et 127.0.0.1
 ALLOWED_HOSTS = [
-    os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'localhost')
+    os.environ.get('RENDER_EXTERNAL_HOSTNAME', '127.0.0.1')
 ]
 # Si tu as besoin de plusieurs domaines, tu peux garder l'ancienne méthode avec split,
 # mais l'approche ci-dessus est plus simple pour Render.

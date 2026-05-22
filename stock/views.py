@@ -1,42 +1,66 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from io import BytesIO
 from xhtml2pdf import pisa
 from openpyxl import Workbook
+from django.db.models import Q
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.safestring import mark_safe
+
 from .models import Produit, Mouvement, Facture
 from .forms import MouvementForm
+
 
 @login_required
 def home(request):
     produits = Produit.objects.all()
-    # Alerte si stock <= seuil
-    for p in produits:
-        p.alerte = p.stock_actuel() <= p.seuil_alerte
-    return render(request, 'stock/home.html', {'produits': produits})
+    nb_produits = produits.count()
+    valeur_stock = sum(p.stock_actuel() * p.prix_unitaire for p in produits)
+    nb_critiques = sum(1 for p in produits if p.est_critique())
+    mouvements_jour = Mouvement.objects.filter(date__date=timezone.now().date()).count()
+
+    context = {
+        'produits': produits,
+        'nb_produits': nb_produits,
+        'valeur_stock': valeur_stock,
+        'nb_critiques': nb_critiques,
+        'mouvements_jour': mouvements_jour,
+    }
+    return render(request, 'stock/home.html', context)
+
 
 @login_required
 def mouvement_list(request):
     mouvements = Mouvement.objects.select_related('produit').order_by('-date')
-    # Filtres
     produit_id = request.GET.get('produit')
     type_mvt = request.GET.get('type')
+    search = request.GET.get('q', '')
+
     if produit_id:
         mouvements = mouvements.filter(produit_id=produit_id)
     if type_mvt in ('ENTREE', 'SORTIE'):
         mouvements = mouvements.filter(type_mouvement=type_mvt)
+    if search:
+        mouvements = mouvements.filter(
+            Q(produit__nom__icontains=search) |
+            Q(fournisseur__icontains=search) |
+            Q(commentaire__icontains=search) |
+            Q(numero_facture_fournisseur__icontains=search)
+        )
 
     produits = Produit.objects.all()
-    context = {
+    return render(request, 'stock/mouvement_list.html', {
         'mouvements': mouvements,
         'produits': produits,
         'selected_produit': produit_id,
         'selected_type': type_mvt,
-    }
-    return render(request, 'stock/mouvement_list.html', context)
+        'search': search,
+    })
+
 
 @login_required
 def mouvement_create(request):
@@ -49,25 +73,31 @@ def mouvement_create(request):
         form = MouvementForm(request.POST, initial=initial)
         if form.is_valid():
             mouvement = form.save(commit=False)
+            mouvement.type_mouvement = type_mvt
 
-            # Définir prix_unitaire si non saisi
             if not mouvement.prix_unitaire:
                 mouvement.prix_unitaire = mouvement.produit.prix_unitaire
 
-            # Calculer prix_total
-            mouvement.prix_total = mouvement.prix_unitaire * mouvement.quantite
-            mouvement.save()
+            mouvement.save()   # ← Le mouvement est bien enregistré ici
 
-            # Gestion facture pour une sortie
-            if mouvement.type_mouvement == Mouvement.SORTIE and form.cleaned_data.get('creer_facture'):
-                Facture.objects.create(
+            # Gestion de la facture pour une sortie
+            if type_mvt == Mouvement.SORTIE and form.cleaned_data.get('creer_facture'):
+                facture = Facture.objects.create(
                     mouvement=mouvement,
                     client_nom=form.cleaned_data['client_nom']
                 )
-                messages.success(request, "Sortie enregistrée et facture créée.")
-                return redirect('facture_pdf', pk=mouvement.pk)
+                # Message avec lien vers le PDF
+                url_pdf = reverse('facture_pdf', args=[mouvement.pk])
+                messages.success(
+                    request,
+                    mark_safe(
+                        f"✅ Sortie enregistrée et facture créée. "
+                        f"<a href='{url_pdf}' class='underline font-semibold'>Télécharger la facture PDF</a>"
+                    )
+                )
+                return redirect('mouvement_list')   # ← On reste sur la liste, pas de blocage
             else:
-                messages.success(request, "Mouvement enregistré.")
+                messages.success(request, "Mouvement enregistré avec succès.")
                 return redirect('mouvement_list')
     else:
         form = MouvementForm(initial=initial)
@@ -76,6 +106,7 @@ def mouvement_create(request):
         'form': form,
         'type_mvt': type_mvt,
     })
+
 
 @login_required
 def facture_pdf(request, pk):
@@ -90,20 +121,13 @@ def facture_pdf(request, pk):
         return redirect('mouvement_list')
 
     produit = mouvement.produit
-    prix_ht = mouvement.prix_unitaire or produit.prix_unitaire
-    total_ht = mouvement.prix_total or (prix_ht * mouvement.quantite)
-    tva_pct = produit.tva
-    montant_tva = total_ht * tva_pct / 100
-    total_ttc = total_ht + montant_tva
-
+    total_ht = facture.total_ht()
+    total_ttc = facture.total_ttc()
     context = {
         'mouvement': mouvement,
         'facture': facture,
         'produit': produit,
-        'prix_ht': prix_ht,
         'total_ht': total_ht,
-        'tva_pct': tva_pct,
-        'montant_tva': montant_tva,
         'total_ttc': total_ttc,
     }
     html_string = render_to_string('stock/facture_template.html', context)
@@ -114,10 +138,10 @@ def facture_pdf(request, pk):
     response['Content-Disposition'] = f'inline; filename="{facture.numero()}.pdf"'
     return response
 
+
 @login_required
 def export_excel(request):
     mouvements = Mouvement.objects.select_related('produit').order_by('-date')
-    # Mêmes filtres
     produit_id = request.GET.get('produit')
     type_mvt = request.GET.get('type')
     if produit_id:
@@ -126,7 +150,6 @@ def export_excel(request):
         mouvements = mouvements.filter(type_mouvement=type_mvt)
 
     wb = Workbook()
-    # Feuille "Grand Livre" (tous les mouvements)
     ws = wb.active
     ws.title = "Grand Livre"
     ws.append([
@@ -145,9 +168,9 @@ def export_excel(request):
             mvt.get_type_mouvement_display(),
             mvt.produit.nom,
             mvt.quantite,
-            mvt.produit.unite_mesure,
+            mvt.produit.get_unite_display(),
             float(mvt.prix_unitaire or mvt.produit.prix_unitaire),
-            float(mvt.prix_total or (mvt.prix_unitaire * mvt.quantite)),
+            float(mvt.prix_total()),
             mvt.commentaire,
             mvt.fournisseur,
             mvt.numero_facture_fournisseur,
@@ -155,18 +178,18 @@ def export_excel(request):
             fact_num,
         ])
 
-    # Deuxième feuille : résumé des stocks
+    # Deuxième feuille
     ws2 = wb.create_sheet("Stock actuel")
     ws2.append(["Produit", "Unité", "Prix unitaire", "Stock", "Seuil alerte", "Alerte"])
-    for produit in Produit.objects.all():
-        stock = produit.stock_actuel()
-        alerte = "OUI" if stock <= produit.seuil_alerte else "NON"
+    for p in Produit.objects.all():
+        stock = p.stock_actuel()
+        alerte = "OUI" if stock <= p.seuil_alerte else "NON"
         ws2.append([
-            produit.nom,
-            produit.unite_mesure,
-            float(produit.prix_unitaire),
+            p.nom,
+            p.get_unite_display(),
+            float(p.prix_unitaire),
             stock,
-            produit.seuil_alerte,
+            p.seuil_alerte,
             alerte
         ])
 

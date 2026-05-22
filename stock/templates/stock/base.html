@@ -6,7 +6,6 @@
     <title>{% block title %}Khalil Gestion Pro{% endblock %}</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -34,7 +33,6 @@
         }
     </script>
 </head>
-
 <body class="bg-gradient-to-br from-primary-50 to-white text-gray-800 min-h-screen flex flex-col">
 
 <!-- NAVBAR -->
@@ -48,27 +46,23 @@
                     <span class="text-primary-600 font-black text-xl">K</span>
                 </a>
                 <div>
-                    <h1 class="text-white text-2xl font-extrabold leading-none">
-                        Khalil Gestion Pro
-                    </h1>
-                    <p class="text-primary-100 text-sm mt-1">
-                        Gestion moderne de stock
-                    </p>
+                    <h1 class="text-white text-2xl font-extrabold leading-none">Khalil Gestion Pro</h1>
+                    <p class="text-primary-100 text-sm mt-1">Gestion moderne de stock</p>
                 </div>
             </div>
 
-            <!-- MENU -->
-            <div class="hidden lg:flex items-center gap-2">
-                <a href="{% url 'home' %}" class="px-4 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium">
+            <!-- MENU (toujours visible, s'adapte en colonne sur mobile) -->
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{% url 'home' %}" class="px-3 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium text-sm sm:text-base">
                     Tableau de bord
                 </a>
-                <a href="{% url 'mouvement_list' %}" class="px-4 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium">
+                <a href="{% url 'mouvement_list' %}" class="px-3 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium text-sm sm:text-base">
                     Grand Livre
                 </a>
-                <a href="{% url 'mouvement_create' %}?type=ENTREE" class="px-4 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white transition shadow-md font-medium">
+                <a href="{% url 'mouvement_create' %}?type=ENTREE" class="px-3 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white transition shadow-md font-medium text-sm sm:text-base">
                     + Entrée
                 </a>
-                <a href="{% url 'mouvement_create' %}?type=SORTIE" class="px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-md font-medium">
+                <a href="{% url 'mouvement_create' %}?type=SORTIE" class="px-3 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-md font-medium text-sm sm:text-base">
                     + Sortie
                 </a>
             </div>
@@ -77,17 +71,11 @@
             <div class="flex items-center gap-3">
                 {% if user.is_authenticated %}
                     <div class="hidden sm:block text-right">
-                        <p class="text-white font-semibold text-sm">
-                            {{ user.username }}
-                        </p>
-                        <a href="{% url 'logout' %}" class="text-primary-100 hover:text-white text-xs underline transition">
-                            Déconnexion
-                        </a>
+                        <p class="text-white font-semibold text-sm">{{ user.username }}</p>
+                        <a href="{% url 'logout' %}" class="text-primary-100 hover:text-white text-xs underline transition">Déconnexion</a>
                     </div>
                     <div class="w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center">
-                        <span class="text-primary-600 font-bold">
-                            {{ user.username|slice:":1"|upper }}
-                        </span>
+                        <span class="text-primary-600 font-bold">{{ user.username|slice:":1"|upper }}</span>
                     </div>
                 {% endif %}
             </div>
@@ -112,7 +100,7 @@
                         bg-blue-100 text-blue-800 border-l-4 border-blue-500
                     {% endif %}
                 ">
-                    <span class="font-medium">{{ message }}</span>
+                    <span class="font-medium">{{ message|safe }}</span>
                 </div>
             {% endfor %}
         {% endif %}
@@ -128,12 +116,8 @@
     <div class="max-w-7xl mx-auto px-6 py-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-5">
             <div>
-                <p class="text-gray-500 font-medium">
-                    © {% now "Y" %} Khalil Gestion Pro
-                </p>
-                <p class="text-sm text-gray-400 mt-1">
-                    Tous droits réservés
-                </p>
+                <p class="text-gray-500 font-medium">© {% now "Y" %} Khalil Gestion Pro</p>
+                <p class="text-sm text-gray-400 mt-1">Tous droits réservés</p>
             </div>
             <div class="flex gap-6 text-sm">
                 <a href="#" class="text-gray-500 hover:text-primary-600 transition">Assistance</a>

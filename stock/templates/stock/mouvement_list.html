@@ -1,105 +1,161 @@
 {% extends 'stock/base.html' %}
-{% block title %}Historique des mouvements - Khalil Gestion Pro{% endblock %}
-
+{% block title %}Grand Livre{% endblock %}
 {% block content %}
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+
+<!-- BLOC MESSAGES FLASH (Indispensable pour afficher notre lien de téléchargement PDF) -->
+{% if messages %}
+<div class="max-w-7xl mx-auto mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="p-4 rounded-2xl border text-sm font-medium transition shadow-sm
+        {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+        {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+        {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+        {{ message|safe }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="flex flex-col lg:flex-row justify-between lg:items-center gap-5 mb-8">
     <div>
-        <h1 class="text-3xl font-extrabold text-primary-900 tracking-tight">Historique des mouvements</h1>
-        <p class="text-gray-500 text-sm mt-1">Consultez le grand livre des flux d'entrées et de sorties.</p>
+        <h1 class="text-3xl font-bold text-primary-800">Grand Livre</h1>
+        <p class="text-gray-500 mt-2">Gestion et suivi complet des entrées et sorties de stock.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'mouvement_create' %}?type=ENTREE"
+           class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-2xl shadow-lg font-medium transition">
+            + Nouvelle entrée
+        </a>
+        <a href="{% url 'mouvement_create' %}?type=SORTIE"
+           class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-3 rounded-2xl shadow-lg font-medium transition">
+            + Nouvelle sortie
+        </a>
     </div>
 </div>
 
-<!-- FILTRES ET ACTIONS -->
-<div class="bg-white p-5 rounded-2xl shadow-card border border-primary-100 mb-8">
-    <form method="get" class="flex flex-col lg:flex-row gap-4 justify-between items-end lg:items-center">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-auto flex-1">
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Filtrer par produit</label>
-                <select name="produit" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:bg-white text-sm transition">
-                    <option value="">Tous les produits</option>
-                    {% for p in produits %}
-                        <option value="{{ p.id }}" {% if selected_produit == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nom }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Filtrer par type</label>
-                <select name="type" class="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:bg-white text-sm transition">
-                    <option value="">Tous les types</option>
-                    <option value="ENTREE" {% if selected_type == 'ENTREE' %}selected{% endif %}>Entrées</option>
-                    <option value="SORTIE" {% if selected_type == 'SORTIE' %}selected{% endif %}>Sorties</option>
-                </select>
-            </div>
+<!-- FILTRES -->
+<div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-primary-100 p-6 mb-8">
+    <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-6">
+        <div>
+            <h2 class="text-xl font-bold text-primary-700">Filtres avancés</h2>
+            <p class="text-sm text-gray-500 mt-1">Filtrer rapidement les mouvements enregistrés.</p>
         </div>
-
-        <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
-            <button type="submit" class="px-5 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition shadow-sm">
+        <a href="{% url 'export_excel' %}?{{ request.GET.urlencode }}"
+           class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-5 py-3 rounded-2xl shadow-lg font-medium transition">
+            Export Excel
+        </a>
+    </div>
+    <form method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        <!-- On conserve la recherche 'q' active lors du filtrage par produit/type -->
+        <input type="hidden" name="q" value="{{ search }}">
+        
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Produit</label>
+            <select name="produit" class="w-full bg-primary-50 border border-primary-100 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-400 outline-none transition">
+                <option value="">Tous les produits</option>
+                {% for p in produits %}
+                <option value="{{ p.id }}" {% if selected_produit == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Type de mouvement</label>
+            <select name="type" class="w-full bg-primary-50 border border-primary-100 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-400 outline-none transition">
+                <option value="">Tous les types</option>
+                <option value="ENTREE" {% if selected_type == 'ENTREE' %}selected{% endif %}>Entrées</option>
+                <option value="SORTIE" {% if selected_type == 'SORTIE' %}selected{% endif %}>Sorties</option>
+            </select>
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-5 py-3 rounded-2xl shadow-lg font-medium transition">
                 Filtrer
             </button>
-            <a href="{% url 'export_excel' %}?{{ request.GET.urlencode }}" class="px-5 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition shadow-sm">
-                Exporter Excel
+        </div>
+        <div class="flex items-end">
+            <a href="{% url 'mouvement_list' %}" class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-3 rounded-2xl font-medium transition">
+                Réinitialiser
             </a>
         </div>
     </form>
 </div>
 
-<!-- DATA TABLE -->
-<div class="bg-white rounded-2xl shadow-card overflow-hidden border border-primary-100">
+<!-- TABLEAU -->
+<div class="bg-white rounded-3xl shadow-xl border border-primary-100 overflow-hidden">
+    <div class="bg-gradient-to-r from-primary-400 to-primary-600 px-6 py-5 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
+        <div>
+            <h3 class="text-white text-xl font-bold">Mouvements de stock</h3>
+            <p class="text-primary-100 text-sm mt-1">Historique détaillé des opérations.</p>
+        </div>
+        <!-- CORRECTION : Formulaire pour la recherche rapide -->
+        <form method="get" class="flex gap-2">
+            {% if selected_produit %}<input type="hidden" name="produit" value="{{ selected_produit }}">{% endif %}
+            {% if selected_type %}<input type="hidden" name="type" value="{{ selected_type }}">{% endif %}
+            <input type="text" name="q" placeholder="Recherche rapide..." value="{{ search }}"
+                   class="bg-white rounded-2xl px-5 py-3 text-sm outline-none shadow-md w-72 text-gray-800">
+        </form>
+    </div>
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-100">
+        <table class="min-w-full">
             <thead class="bg-primary-50">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Produit</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Quantité</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Commentaire</th>
-                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase tracking-wider">Facture</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Date</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Type</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Produit</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Qté</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Prix U.</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Prix Total</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">Fournisseur / Client</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">N° Facture</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-primary-700 uppercase">PDF</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
+            <tbody class="divide-y divide-primary-50 bg-white">
                 {% for m in mouvements %}
-                    <tr class="transition hover:bg-primary-50/30">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ m.date|date:"d/m/Y H:i" }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            {% if m.type_mouvement == 'ENTREE' %}
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-700">
-                                    {{ m.get_type_mouvement_display }}
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-yellow-100 text-yellow-800">
-                                    {{ m.get_type_mouvement_display }}
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                            {{ m.produit.nom }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800">
-                            {{ m.quantite }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                            {{ m.commentaire|default:"-" }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            {% if m.type_mouvement == 'SORTIE' and m.facture %}
-                                <a href="{% url 'facture_pdf' m.pk %}" class="inline-flex items-center px-3 py-1.5 border border-primary-200 text-xs font-semibold text-primary-700 bg-white hover:bg-primary-50 rounded-xl transition shadow-sm">
-                                    Format PDF
-                                </a>
-                            {% else %}
-                                <span class="text-gray-300">-</span>
-                            {% endif %}
-                        </td>
-                    </tr>
+                <tr class="hover:bg-primary-50/80 transition duration-200">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ m.date|date:"d/m/Y H:i" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if m.type_mouvement == 'ENTREE' %}
+                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Entrée</span>
+                        {% else %}
+                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">Sortie</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-800">{{ m.produit.nom }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-semibold text-primary-700">{{ m.quantite }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ m.prix_unitaire|floatformat:2 }} $</td>
+                    <!-- CORRECTION : Appel correct de la méthode sans planter le filtre -->
+                    <td class="px-6 py-4 whitespace-nowrap font-bold text-primary-700">
+                        {{ m.prix_total|floatformat:2 }} $
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">
+                        {% if m.type_mouvement == 'ENTREE' %}
+                            {{ m.fournisseur|default:"-" }}
+                        {% else %}
+                            {% if m.facture %}{{ m.facture.client_nom }}{% else %}-{% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">
+                        {% if m.type_mouvement == 'ENTREE' %}
+                            {{ m.numero_facture_fournisseur|default:"-" }}
+                        {% else %}
+                            {% if m.facture %}{{ m.facture.numero }}{% else %}-{% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if m.type_mouvement == 'SORTIE' and m.facture %}
+                        <a href="{% url 'facture_pdf' m.pk %}" target="_blank"
+                           class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-4 py-2 rounded-xl text-sm shadow-lg transition">
+                            Télécharger
+                        </a>
+                        {% else %}
+                        <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
                 {% empty %}
-                    <tr>
-                        <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-400 font-medium">
-                            Aucun mouvement trouvé avec ces critères.
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="9" class="px-6 py-12 text-center text-gray-500">Aucun mouvement trouvé.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

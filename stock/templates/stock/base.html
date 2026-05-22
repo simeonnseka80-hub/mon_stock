@@ -51,24 +51,33 @@
                 </div>
             </div>
 
-            <!-- MENU (toujours visible, s'adapte en colonne sur mobile) -->
-            <div class="flex flex-wrap items-center gap-2">
-                <a href="{% url 'home' %}" class="px-3 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium text-sm sm:text-base">
-                    Tableau de bord
+            <!-- Bouton hamburger (mobile) -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-white focus:outline-none">
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- MENU PRINCIPAL (desktop : visible en ligne, mobile : caché par défaut, s'affiche en colonne) -->
+            <div id="main-menu" class="hidden md:flex flex-col md:flex-row md:items-center gap-2 absolute md:static top-20 left-0 right-0 bg-primary-500 md:bg-transparent p-4 md:p-0 z-40">
+                <a href="{% url 'home' %}" class="block px-3 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium text-sm sm:text-base">
+                    📊 Tableau de bord
                 </a>
-                <a href="{% url 'mouvement_list' %}" class="px-3 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium text-sm sm:text-base">
-                    Grand Livre
+                <a href="{% url 'mouvement_list' %}" class="block px-3 py-2 rounded-xl text-white hover:bg-white/20 transition font-medium text-sm sm:text-base">
+                    📚 Grand Livre
                 </a>
-                <a href="{% url 'mouvement_create' %}?type=ENTREE" class="px-3 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white transition shadow-md font-medium text-sm sm:text-base">
+                <a href="{% url 'mouvement_create' %}?type=ENTREE" class="block px-3 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white transition shadow-md font-medium text-sm sm:text-base">
                     + Entrée
                 </a>
-                <a href="{% url 'mouvement_create' %}?type=SORTIE" class="px-3 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-md font-medium text-sm sm:text-base">
+                <a href="{% url 'mouvement_create' %}?type=SORTIE" class="block px-3 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white transition shadow-md font-medium text-sm sm:text-base">
                     + Sortie
                 </a>
             </div>
 
-            <!-- USER -->
-            <div class="flex items-center gap-3">
+            <!-- USER (visible seulement sur desktop, pour mobile on le met dans le menu plus tard si nécessaire) -->
+            <div class="hidden md:flex items-center gap-3">
                 {% if user.is_authenticated %}
                     <div class="hidden sm:block text-right">
                         <p class="text-white font-semibold text-sm">{{ user.username }}</p>
@@ -83,6 +92,16 @@
         </div>
     </div>
 </nav>
+
+<!-- Script pour le menu mobile -->
+<script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const mainMenu = document.getElementById('main-menu');
+
+    menuToggle.addEventListener('click', () => {
+        mainMenu.classList.toggle('hidden');
+    });
+</script>
 
 <!-- MAIN -->
 <main class="flex-1">
